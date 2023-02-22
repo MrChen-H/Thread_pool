@@ -12,8 +12,8 @@
 namespace Thread_Pool
 {
 
-#define MAX_THREAD 1000 //×î´óÏß³ÌÊı
-#define MIN_THREAD 16   //×îĞ¡Ïß³ÌÊı
+#define MAX_THREAD 1000 //æœ€å¤§çº¿ç¨‹æ•°
+#define MIN_THREAD 16   //æœ€å°çº¿ç¨‹æ•°
 #define RATE_DOWN  1.5
 #define RATE_UP    2.0
 
@@ -21,62 +21,62 @@ namespace Thread_Pool
 
     class thread_pool
     {
-    private://³ÉÔ±
-        std::queue<std::function<void()>> task_queue;//ÈÎÎñ¶ÓÁĞ
-        std::list<std::thread> workers_list;    //¹¤×÷Ïß³ÌÁĞ±í
-        std::thread manager;                    //¹ÜÀíÕßÏß³Ì,ÓÃÓÚ¸ù¾İ¶¯Ì¬µ÷ÕûÏß³Ì³Ø´óĞ¡
+    private://æˆå‘˜
+        std::queue<std::function<void()>> task_queue;//ä»»åŠ¡é˜Ÿåˆ—
+        std::list<std::thread> workers_list;    //å·¥ä½œçº¿ç¨‹åˆ—è¡¨
+        std::thread manager;                    //ç®¡ç†è€…çº¿ç¨‹,ç”¨äºæ ¹æ®åŠ¨æ€è°ƒæ•´çº¿ç¨‹æ± å¤§å°
 
-        std::mutex task_queue_mutex;            //ÈÎÎñ¶ÓÁĞËø
-        std::mutex manager_mutex;               //¹ÜÀíÕßÏß³Ì×¨ÓÃËø
+        std::mutex task_queue_mutex;            //ä»»åŠ¡é˜Ÿåˆ—é”
+        std::mutex manager_mutex;               //ç®¡ç†è€…çº¿ç¨‹ä¸“ç”¨é”
 
-        std::condition_variable condition;      //ĞÅºÅÁ¿,ÓÃÓÚÍ¨ÖªÏß³Ì
-        bool stop;                              //µ±Ïß³Ì³Ø¹Ø±ÕÊ±Ê¹ÓÃ
+        std::condition_variable condition;      //ä¿¡å·é‡,ç”¨äºé€šçŸ¥çº¿ç¨‹
+        bool stop;                              //å½“çº¿ç¨‹æ± å…³é—­æ—¶ä½¿ç”¨
 
-    public://½Ó¿Ú
-        thread_pool();                          //¹¹Ôìº¯Êı
-        ~thread_pool();                         //Îö¹¹
+    public://æ¥å£
+        thread_pool();                          //æ„é€ å‡½æ•°
+        ~thread_pool();                         //ææ„
 
-        void manager_working();                 //¹ÜÀíÕßÏß³Ì¹¤×÷Âß¼­ 
-        void worker_working();                  //¹¤×÷Ïß³Ì¹¤×÷Âß¼­
+        void manager_working();                 //ç®¡ç†è€…çº¿ç¨‹å·¥ä½œé€»è¾‘ 
+        void worker_working();                  //å·¥ä½œçº¿ç¨‹å·¥ä½œé€»è¾‘
 
-        void create_thread(int create_number);  //Ïß³Ì´´½¨º¯Êı 
-        void delete_thread(int delete_number);  //Ïß³ÌÊÍ·Åº¯Êı 
+        void create_thread(int create_number);  //çº¿ç¨‹åˆ›å»ºå‡½æ•° 
+        void delete_thread(int delete_number);  //çº¿ç¨‹é‡Šæ”¾å‡½æ•° 
         void insert_task(std::function<void()>);
-        int get_worker_number() { return workers_list.size(); };//²âÊÔµ±Ç°ÓĞ¶àÉÙÏß³Ì
+        int get_worker_number() { return workers_list.size(); };//æµ‹è¯•å½“å‰æœ‰å¤šå°‘çº¿ç¨‹
     };
 
-    //ÊµÏÖ²¿·Ö
-    thread_pool::thread_pool() :stop(false)          //¹¹Ôìº¯Êı
+    //å®ç°éƒ¨åˆ†
+    thread_pool::thread_pool() :stop(false)          //æ„é€ å‡½æ•°
     {
        manager = std::move(std::thread([=] {
             manager_working();
-            }));                                    //´´½¨¹ÜÀíÕßÕßÏß³Ì
+            }));                                    //åˆ›å»ºç®¡ç†è€…è€…çº¿ç¨‹
 
 
-        create_thread(MIN_THREAD);       //´´½¨Ïß³Ì³Ø
+        create_thread(MIN_THREAD);       //åˆ›å»ºçº¿ç¨‹æ± 
     }
 
-    thread_pool::~thread_pool()                     //Îö¹¹º¯Êı
+    thread_pool::~thread_pool()                     //ææ„å‡½æ•°
     {
-        stop = true;                                //¹Ø±ÕÏß³Ì³Ø
-        condition.notify_all();                     //»½ĞÑµ±Ç°³ØÖĞËùÓĞÏß³Ì
+        stop = true;                                //å…³é—­çº¿ç¨‹æ± 
+        condition.notify_all();                     //å”¤é†’å½“å‰æ± ä¸­æ‰€æœ‰çº¿ç¨‹
 
-        for (auto& it : workers_list)     //±éÀúÁĞ±í²¢¹Ø±Õ
+        for (auto& it : workers_list)     //éå†åˆ—è¡¨å¹¶å…³é—­
         {
             it.join();
         }
-        manager.join();                             //¹Ø±Õ¹ÜÀíÕßÏß³Ì
+        manager.join();                             //å…³é—­ç®¡ç†è€…çº¿ç¨‹
     }
 
     void thread_pool::create_thread(int create_number)
     {
-        if (stop)                                    //µ±Ïß³Ì³Ø±»¹Ø±ÕÊ±
+        if (stop)                                    //å½“çº¿ç¨‹æ± è¢«å…³é—­æ—¶
         {
             return;
         }
         for (int i = 0; i < create_number; i++)
         {
-            workers_list.emplace_back([=] {          //´´½¨¹¤×÷Ïß³Ì²¢¼ÓÈë¶ÓÁĞÖĞ
+            workers_list.emplace_back([=] {          //åˆ›å»ºå·¥ä½œçº¿ç¨‹å¹¶åŠ å…¥é˜Ÿåˆ—ä¸­
                 worker_working();
                 });
         }
@@ -84,17 +84,17 @@ namespace Thread_Pool
 
     void thread_pool::delete_thread(int delete_number)
     {
-        if (stop)                                    //Ïß³Ì³Ø¹Ø±ÕÊ±ÍË³ö
+        if (stop)                                    //çº¿ç¨‹æ± å…³é—­æ—¶é€€å‡º
         {
             return;
         }
 
         for (int i = 0; i < delete_number; i++)
         {
-            if (workers_list.size() > MIN_THREAD)      //±£³Ö×Ü¹¤×÷Ïß³ÌÊı²»µÍÓÚ×îµÍÏß³ÌÊı
+            if (workers_list.size() > MIN_THREAD)      //ä¿æŒæ€»å·¥ä½œçº¿ç¨‹æ•°ä¸ä½äºæœ€ä½çº¿ç¨‹æ•°
             {
                 std::thread T = std::move(workers_list.back());
-                                          //µÈ´ıÏß³ÌÖ´ĞĞ½áÊøÍË³ö
+                                          //ç­‰å¾…çº¿ç¨‹æ‰§è¡Œç»“æŸé€€å‡º
                 workers_list.pop_back();
                 T.join(); 
             }
@@ -114,7 +114,7 @@ namespace Thread_Pool
         {
             condition.wait(lock, [&] {
                 return stop || ((workers_list.size() < task_queue.size()|| workers_list.size() > task_queue.size() * RATE_UP) && task_queue.size() > MIN_THREAD);
-                });//µ±¹Ø±ÕÏß³Ì³Ø»òÕß¹¤×÷Ïß³Ì×ÜÊıĞ¡ÓÚÈÎÎñÊıÁ¿*×îµÍ±¶ÂÊÊ±»½ĞÑ¹ÜÀíÕßÔö¼ÓÏß³Ì,»òÕßµ±Ïß³Ì×ÜÊı´óÓÚÁ½±¶ÈÎÎñÊı*×î¸ß±¶ÂÊÊ±»½ĞÑ¹ÜÀíÕßÉ¾³ıÏß³Ì,ÇÒÖ»ÓĞµ±ÈÎÎñÊıÁ¿´óÓÚ×îµÍÏß³ÌÊıÁ¿²Å»á»½ĞÑ¹ÜÀíÕß
+                });//å½“å…³é—­çº¿ç¨‹æ± æˆ–è€…å·¥ä½œçº¿ç¨‹æ€»æ•°å°äºä»»åŠ¡æ•°é‡*æœ€ä½å€ç‡æ—¶å”¤é†’ç®¡ç†è€…å¢åŠ çº¿ç¨‹,æˆ–è€…å½“çº¿ç¨‹æ€»æ•°å¤§äºä»»åŠ¡æ•°*æœ€é«˜å€ç‡æ—¶å”¤é†’ç®¡ç†è€…åˆ é™¤çº¿ç¨‹,ä¸”åªæœ‰å½“ä»»åŠ¡æ•°é‡å¤§äºæœ€ä½çº¿ç¨‹æ•°é‡æ‰ä¼šå”¤é†’ç®¡ç†è€…
 
             if (workers_list.size() < task_queue.size())
             {
